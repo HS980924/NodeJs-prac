@@ -6,6 +6,8 @@ const dotenv = require('dotenv');
 const path = require('path');
 
 dotenv.config();
+const indexRouter = require('./routers');
+const userRouter = require('./routers/user');
 const app = express();
 app.set('port',process.env.PORT || 3000);
 
@@ -30,18 +32,22 @@ app.use((req,res,next) =>{
     next();
 });
 
-app.get('/',(req,res,next) => {
-    console.log('GET / 요청에서만 실행됩니다.');
-    next();
-}, (req,res) => {
-    throw new Error('에러는 에러 처리 미들웨어로 갑니다.')
-});
+// app.get('/',(req,res,next) => {
+//     console.log('GET / 요청에서만 실행됩니다.');
+//     next();
+// }, (req,res) => {
+//     throw new Error('에러는 에러 처리 미들웨어로 갑니다.')
+// });
+
+app.use('/',indexRouter);
+app.use('/user',userRouter);
 
 app.use((err,req,res,next) => {
     console.error(err);
     res.status(500).send(err.message);
 });
 
+app.use
 
 // app.get('/',(req,res)=>{
 //     //res.send('Hello Express');
