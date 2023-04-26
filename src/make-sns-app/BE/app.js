@@ -4,10 +4,14 @@ const path = require('path');
 const cookieParser = require('cookie-parser');
 const session = require('express-session');
 const dotenv = require('dotenv');
+const passport = require('passport');
+
 const { sequelize } = require('./models');
+const passportConfig = require('./passport');
 
 dotenv.config();
 const app = express();
+passportConfig();
 
 sequelize.sync({force:false})
     .then(()=>{
@@ -31,7 +35,8 @@ app.use(session({
         secure: false,
     },
 }));
-
+app.use(passport.initialize());
+app.use(passport.session());
 
 app.use((req,res,next)=>{
     const error = new Error(`${req.method} ${req.url} 라우터가 없습니다.`);
