@@ -13,6 +13,7 @@ dotenv.config();
 const app = express();
 passportConfig();
 
+
 sequelize.sync({force:false})
     .then(()=>{
         console.log('데이터베이스 연결 성공');
@@ -35,6 +36,11 @@ app.use(session({
         secure: false,
     },
 }));
+
+// passport.initialize() 미들웨어는 요청(req 객체)에 passport 설정을 심음
+// passport.session() 미들웨어는 req.session 객체에 passport 정보를 저장
+// req.session 객체는 express-session에서 생성
+// passport 미들웨어는 express-session 미들웨어보다 뒤에 연결해야함
 app.use(passport.initialize());
 app.use(passport.session());
 
