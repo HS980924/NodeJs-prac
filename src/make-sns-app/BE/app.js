@@ -6,15 +6,28 @@ const session = require('express-session');
 const dotenv = require('dotenv');
 const passport = require('passport');
 
+
+const nunjucks = require('nunjucks');
 const { sequelize } = require('./models');
 const passportConfig = require('./passport');
+
+const pageRouter = require('./routes/page');
+const authRouter = require('./routes/auth');
+const postRouter = require('./routes/post');
+const userRouter = require('./routes/user');
 
 dotenv.config();
 const app = express();
 passportConfig();
 
+app.set('port',process.env.NODE_ENV || 8001);
+app.set('view engine','html');
+nunjucks.configure('views',{
+    express: app,
+    watch: true,
+});
 
-sequelize.sync({force:false})
+sequelize.sync({force:true})
     .then(()=>{
         console.log('데이터베이스 연결 성공');
     })
@@ -22,8 +35,9 @@ sequelize.sync({force:false})
         console.error(err);
     });
 
-app.set('port',process.env.NODE_ENV || 8001);
 app.use(morgan('dev'));
+app.use(express.static(path.join(__dirname,'public')));
+app.use('img', express.static(path.join(__dirname,'uploads')));
 app.use(express.json());
 app.use(express.urlencoded({extended:false}));
 app.use(cookieParser(process.env.COOKIE_SECRET));
@@ -37,12 +51,15 @@ app.use(session({
     },
 }));
 
-// passport.initialize() 미들웨어는 요청(req 객체)에 passport 설정을 심음
-// passport.session() 미들웨어는 req.session 객체에 passport 정보를 저장
+app.use(passport.initialize());// 미들웨어는 요청(req 객체)에 passport 설정을 심음
+app.use(passport.session());// 미들웨어는 req.session 객체에 passport 정보를 저장
 // req.session 객체는 express-session에서 생성
-// passport 미들웨어는 express-session 미들웨어보다 뒤에 연결해야함
-app.use(passport.initialize());
-app.use(passport.session());
+// // passport 미들웨어는 express-session 미들웨어보다 뒤에 연결해야함
+
+app.use('/',pageRouter);
+app.use('/auth',authRouter);
+app.use('/post',postRouter);
+app.use('/user',userRouter);
 
 app.use((req,res,next)=>{
     const error = new Error(`${req.method} ${req.url} 라우터가 없습니다.`);

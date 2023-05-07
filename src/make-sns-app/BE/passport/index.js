@@ -20,7 +20,18 @@ module.exports = () => {
     // serializeUser의 done의 두번째 인수로 넣었던 데이터가 deserializeUser의 매개변수가 됨
     // 해당 매개변수로 사용자 정보를 조회하고 조회한 정보를 req.user에 저장
     passport.deserializeUser((id,done) =>{
-        User.findOne({where:{id}})
+        User.findOne({
+            where:{id},
+            include: [{
+                model:User,
+                attributes:['id','nick'],
+                as: 'Followers',
+            },{
+                model: User,
+                attributes:['id','nick'],
+                as:'Followings'
+            }],
+        })
             .then(user => done(null, user))
             .catch(err => done(err));
     });
@@ -29,4 +40,4 @@ module.exports = () => {
     // deserializeUser -> 매 요청 시 세션에 저장된 아이디를 통해 사용자 정보 객체를 조회 및 불러옴
 
     local();
-}
+};

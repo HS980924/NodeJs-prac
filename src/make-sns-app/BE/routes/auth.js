@@ -9,7 +9,7 @@ const router = express.Router();
 
 
 // 회원가입
-router.post('join', isNotLoggedIn, async(req,res,next)=>{
+router.post('/join', isNotLoggedIn, async(req,res,next)=>{
     const { email, nick, password } = req.body;
     try{
         const exUser = await User.findOne({where:{email}});
@@ -46,7 +46,7 @@ router.post('join', isNotLoggedIn, async(req,res,next)=>{
 // passport는 req 객체에 login과 logout 메서드를 추가
 // req.login은 passport.serializeUser 메서드를 호출
 // req.login에 제공하는 user 객체가 serializeUser로 넘어감
-router.post('/login', isNotLoggedIn, async(req,res,next) =>{
+router.post('/login', isNotLoggedIn, (req,res,next) =>{
     passport.authenticate('local', (authError, user, info) =>{
         if(authError){
             console.error(authError);
@@ -71,9 +71,13 @@ router.post('/login', isNotLoggedIn, async(req,res,next) =>{
 // req.session.destroy 메서드는 객체의 내용을 제거, 세션 정보를 지운다.
 // 메인 페이지로 돌아감
 router.get('/logout', isLoggedIn, (req,res)=>{
-    req.logout();
-    req.session.destroy();
-    res.redirect('/');
+    req.logout((err) => {
+        if(err){
+            return next(err);
+        }
+        req.session.destroy();
+        res.redirect('/');
+    });
 });
 
 module.exports = router;
